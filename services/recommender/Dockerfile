@@ -14,6 +14,7 @@ WORKDIR /app
 # 1) Third-party dependencies only (cached until a pyproject.toml or uv.lock changes).
 COPY pyproject.toml uv.lock ./
 COPY libs/common/pyproject.toml libs/common/
+COPY db/pyproject.toml db/
 COPY services/api/pyproject.toml services/api/
 COPY services/ingestion/pyproject.toml services/ingestion/
 COPY services/recommender/pyproject.toml services/recommender/

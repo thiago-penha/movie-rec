@@ -16,6 +16,7 @@ WORKDIR /app
 #    pyproject.toml or uv.lock changes, so code edits rebuild in seconds.
 COPY pyproject.toml uv.lock ./
 COPY libs/common/pyproject.toml libs/common/
+COPY db/pyproject.toml db/
 COPY services/api/pyproject.toml services/api/
 COPY services/ingestion/pyproject.toml services/ingestion/
 COPY services/recommender/pyproject.toml services/recommender/

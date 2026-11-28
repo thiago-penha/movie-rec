@@ -2,7 +2,7 @@
 # it only ties the members together so they share one lockfile (uv.lock) and one
 # set of dev tools. Each member keeps its own pyproject.toml and dependencies.
 [tool.uv.workspace]
-members = ["libs/common", "services/*"]
+members = ["libs/common", "services/*", "db"]
 
 [dependency-groups]
 dev = [
@@ -27,4 +27,4 @@ known-first-party = ["common", "api", "ingestion", "recommender"]
 # Every service has a tests/ folder with files like test_health.py. The importlib
 # mode lets pytest collect files with the same name from different folders.
 addopts = "--import-mode=importlib"
-testpaths = ["libs/common/tests", "services/api/tests", "services/ingestion/tests", "services/recommender/tests"]
+testpaths = ["libs/common/tests", "db/tests", "services/api/tests", "services/ingestion/tests", "services/recommender/tests"]
