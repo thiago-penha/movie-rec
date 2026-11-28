@@ -67,6 +67,17 @@ Other commands: `make test`, `make lint`, `make fmt`, `make logs`, `make down`. 
 
 `make test` needs the database running (`make up`): integration tests use a separate `cinematch_test` database on the same Postgres, created automatically, so they never touch your dev data.
 
+### Seeding the movie catalog
+
+Needs a TMDB **API Read Access Token** (v4) in `.env` as `TMDB_API_KEY` (free: themoviedb.org → Settings → API).
+
+```bash
+docker compose run --rm ingestion python -m ingestion.cli seed --limit 200     # quick check, < 1 min
+docker compose run --rm ingestion python -m ingestion.cli seed --limit 10000   # full catalog
+```
+
+The seed takes the most voted movies on TMDB (at least 200 votes) and upserts them on `tmdb_id`, so running it again updates movies instead of duplicating them. Full seed on a laptop (Nov 2026): **~6 min** (366 s) for 9,996 movies. TMDB discover stops at 10,000 results, and a few movies appear on two pages while the ranking shifts, so the catalog ends slightly under 10k.
+
 ### Database migrations
 
 `make up` applies migrations automatically (the one-shot `migrate` service runs `alembic upgrade head` before the other services start). After changing `libs/common/src/common/models.py`:
