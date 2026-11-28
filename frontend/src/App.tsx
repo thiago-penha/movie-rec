@@ -11,6 +11,14 @@ export default function App() {
         <ServiceStatus name="api" url="/api/health" />
         <ServiceStatus name="recommender" url="/rec/health" />
       </section>
+      {/* Required by TMDB's terms of use (spec §4). The logo arrives with the real UI (Phase 5). */}
+      <footer className="mt-auto border-t border-gray-200 pt-4 text-sm text-gray-500">
+        Movie data from{" "}
+        <a href="https://www.themoviedb.org/" className="underline" target="_blank" rel="noreferrer">
+          TMDB
+        </a>
+        . This product uses the TMDB API but is not endorsed or certified by TMDB.
+      </footer>
     </main>
   );
 }
