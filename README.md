@@ -1,1 +1,74 @@
-# movie-rec
+# CineMatch
+
+Movie recommendations from what you already love. Pick a few films, or upload your Letterboxd export, and CineMatch finds what to watch next using semantic vector search over ~10k movies, with grounded "why this movie" explanations from an LLM.
+
+Built as a portfolio and learning project: a small service-based monorepo with PostgreSQL + pgvector, embeddings, RAG and a LangGraph agent.
+
+> Status: Phase 0 (repository skeleton). Features arrive phase by phase.
+
+## Architecture
+
+```
+                    ┌──────────────────────────────────────────────┐
+ Browser ──HTTPS──▶ │ Caddy (reverse proxy, automatic TLS)         │
+                    │   /            → frontend (static React)     │
+                    │   /api/*       → api                         │
+                    │   /rec/*       → recommender                 │
+                    └───────┬──────────────────────┬───────────────┘
+                            │                      │
+                 ┌──────────▼─────────┐  ┌─────────▼────────────┐
+                 │ services/api       │  │ services/recommender │
+                 │ FastAPI            │  │ FastAPI + LangGraph  │
+                 │ auth, users,       │  │ vector search, RAG,  │
+                 │ Letterboxd upload  │  │ Claude calls         │
+                 └──────────┬─────────┘  └─────────┬────────────┘
+                            │ enqueue jobs         │ read movies/vectors
+                            ▼                      ▼
+                 ┌──────────────────────────────────────────────┐
+                 │ PostgreSQL 16 + pgvector                     │
+                 │ users, movies, embeddings, letterboxd data,  │
+                 │ jobs queue, LLM usage                        │
+                 └──────────▲───────────────────────────────────┘
+                            │ poll jobs, write movies + vectors
+                 ┌──────────┴─────────┐        ┌──────────────┐
+                 │ services/ingestion │──────▶ │ TMDB API     │
+                 │ background worker  │        └──────────────┘
+                 │ sentence-transf.   │
+                 └────────────────────┘
+                 recommender ──────────────────▶ Anthropic API (Claude Haiku)
+```
+
+In development there is no Caddy: the Vite dev server proxies `/api` and `/rec` to the services.
+
+## Running locally
+
+Requirements: [Docker Desktop](https://www.docker.com/products/docker-desktop/), [uv](https://docs.astral.sh/uv/), Node.js ≥ 22.22 (24 LTS recommended) and GNU Make.
+On Windows: `winget install astral-sh.uv ezwinports.make OpenJS.NodeJS.LTS`.
+
+```bash
+cp .env.example .env        # PowerShell: Copy-Item .env.example .env
+make install                # Python + frontend dependencies
+make up                     # db, api (:8000), recommender (:8001), ingestion
+make dev-fe                 # frontend on http://localhost:5173
+```
+
+Check it works:
+
+```bash
+curl localhost:8000/api/health   # {"status":"ok"}
+curl localhost:8001/rec/health   # {"status":"ok"}
+```
+
+Open http://localhost:5173: both services should show **ok**. API docs: http://localhost:8000/api/docs and http://localhost:8001/rec/docs.
+
+Other commands: `make test`, `make lint`, `make fmt`, `make logs`, `make down`. Run `make help` for the full list.
+
+## Repository layout
+
+```
+frontend/              React + TypeScript + Vite
+services/api/          FastAPI: auth, users, Letterboxd upload, movie search
+services/ingestion/    background worker: TMDB data, embeddings, matching
+services/recommender/  FastAPI: vector search, RAG, LangGraph agent
+libs/common/           shared Python package (config, db, models, embeddings)
+```
