@@ -1,4 +1,5 @@
-"""Background worker. In Phase 0 it only logs "idle"; Phase 1+ polls the jobs table.
+"""Background worker. For now it only logs "idle"; it starts consuming the job queue
+(common.jobs) when the first job type is added.
 
 Run with: python -m ingestion.worker
 """
