@@ -2,7 +2,7 @@
 # cmd, PowerShell and bash (docker, uv, npm), so this runs on Windows and in CI.
 # Usage: make <target>   (e.g. make up, make test)
 
-.PHONY: help install up down logs ps dev-fe test test-py test-fe lint fmt migrate seed
+.PHONY: help install up down logs ps dev-fe test test-py test-fe lint fmt migrate migration seed
 
 help:
 	@echo "install  install Python (uv) and frontend (npm) dependencies"
@@ -14,6 +14,8 @@ help:
 	@echo "test     run all tests (Python + frontend)"
 	@echo "lint     run all linters"
 	@echo "fmt      auto-format Python code"
+	@echo "migrate  apply database migrations (also runs on every make up)"
+	@echo "migration id=0002 m=\"add reviews\"  generate a migration from model changes"
 
 install:
 	uv sync --all-packages
@@ -52,7 +54,15 @@ fmt:
 	uv run ruff format .
 
 migrate:
-	@echo "Not implemented yet (Phase 1)."
+	docker compose run --rm migrate
+
+# Autogenerate runs in the migrate container (it has the right DATABASE_URL) and
+# writes into db/migrations/versions/ through the bind mount. Read the file after:
+# autogenerate misses things such as extensions.
+migration:
+	docker compose run --rm migrate alembic revision --autogenerate --rev-id $(id) -m "$(m)"
+	uv run ruff format db
+	uv run ruff check --fix db
 
 seed:
 	@echo "Not implemented yet (Phase 2)."

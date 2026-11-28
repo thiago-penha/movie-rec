@@ -1,0 +1,15 @@
+[project]
+name = "cinematch-db"
+version = "0.1.0"
+description = "CineMatch database migrations (Alembic), run by the one-shot migrate service."
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20",
+    "cinematch-common",
+]
+
+[tool.uv.sources]
+cinematch-common = { workspace = true }
+
+# No [build-system]: this is a "virtual" member. uv installs its dependencies, but
+# there is no Python package to install; alembic runs the files in migrations/.

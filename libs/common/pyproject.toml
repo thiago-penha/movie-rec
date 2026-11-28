@@ -3,7 +3,12 @@ name = "cinematch-common"
 version = "0.1.0"
 description = "Shared code for CineMatch services: config, database, models, embeddings."
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pgvector>=0.5",
+    "psycopg[binary]>=3.3",
+    "pydantic-settings>=2.16",
+    "sqlalchemy>=2.1",
+]
 
 # Phase 3 adds an optional extra here:
 #   [project.optional-dependencies]

@@ -9,10 +9,26 @@ x-python-service: &python-service
   env_file: .env
   restart: unless-stopped
   depends_on:
-    db:
-      condition: service_healthy
+    # Start only after migrations succeeded, so code never runs against an old schema.
+    migrate:
+      condition: service_completed_successfully
 
 services:
+  # One-shot: runs `alembic upgrade head` on every `docker compose up`, then exits.
+  # Upgrading an up-to-date database does nothing, so this is safe to repeat.
+  migrate:
+    build:
+      context: .
+      dockerfile: db/Dockerfile
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Mounted so `make migration` writes new migration files back to your machine.
+      - ./db:/app/db
+      - ./libs/common/src:/app/libs/common/src
+
   db:
     image: pgvector/pgvector:pg16
     environment:
