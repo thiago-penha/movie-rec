@@ -8,6 +8,7 @@ members = ["libs/common", "services/*", "db"]
 dev = [
     "httpx2",        # HTTP client behind FastAPI's TestClient (Starlette deprecated plain httpx)
     "pytest>=8.3",
+    "respx>=0.23",
     "ruff>=0.12",
 ]
 
