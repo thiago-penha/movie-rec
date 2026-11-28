@@ -5,6 +5,8 @@ description = "CineMatch ingestion worker: TMDB fetching, embeddings, Letterboxd
 requires-python = ">=3.12"
 dependencies = [
     "cinematch-common",
+    "httpx>=0.29",
+    "tenacity>=9.2",
 ]
 
 [tool.uv.sources]

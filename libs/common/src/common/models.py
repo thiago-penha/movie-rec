@@ -97,6 +97,9 @@ class Movie(Base):
     release_date: Mapped[date | None]
     runtime_min: Mapped[int | None]
     genres: Mapped[list[str]] = _text_array()
+    # Production countries as ISO 3166-1 codes ({US,GB}): stable for filtering, and the
+    # frontend turns them into names in the user's language with Intl.DisplayNames.
+    countries: Mapped[list[str]] = _text_array()
     keywords: Mapped[list[str]] = _text_array()
     overview: Mapped[str]
     tagline: Mapped[str | None]

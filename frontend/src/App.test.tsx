@@ -22,6 +22,13 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "CineMatch" })).toBeInTheDocument();
   });
 
+  it("shows the TMDB attribution", () => {
+    renderApp();
+    expect(
+      screen.getByText(/uses the TMDB API but is not endorsed or certified by TMDB/),
+    ).toBeInTheDocument();
+  });
+
   it("shows ok for both services when they are healthy", async () => {
     renderApp();
     // The status elements exist from the first render (showing "checking…"),
