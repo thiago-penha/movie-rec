@@ -18,7 +18,23 @@ jobs:
       fail-fast: false
       # One job per package, so a failure points straight at the service that broke.
       matrix:
-        package: [libs/common, services/api, services/ingestion, services/recommender]
+        package: [libs/common, db, services/api, services/ingestion, services/recommender]
+    # Integration tests need a real Postgres + pgvector (decision 006). Same image and
+    # host port (5433) as the local compose db, so conftest.py's default URL works as is.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: cinematch
+          POSTGRES_PASSWORD: change-me
+          POSTGRES_DB: cinematch
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U cinematch"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v6
