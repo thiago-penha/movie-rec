@@ -1,0 +1,30 @@
+# Root of the uv workspace. This is a "virtual" root: it is not a package itself,
+# it only ties the members together so they share one lockfile (uv.lock) and one
+# set of dev tools. Each member keeps its own pyproject.toml and dependencies.
+[tool.uv.workspace]
+members = ["libs/common", "services/*"]
+
+[dependency-groups]
+dev = [
+    "httpx2",        # HTTP client behind FastAPI's TestClient (Starlette deprecated plain httpx)
+    "pytest>=8.3",
+    "ruff>=0.12",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# E/F: pycodestyle + pyflakes, I: import sorting, UP: modern syntax,
+# B: likely bugs, SIM: simplifications.
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["common", "api", "ingestion", "recommender"]
+
+[tool.pytest.ini_options]
+# Every service has a tests/ folder with files like test_health.py. The importlib
+# mode lets pytest collect files with the same name from different folders.
+addopts = "--import-mode=importlib"
+testpaths = ["libs/common/tests", "services/api/tests", "services/ingestion/tests", "services/recommender/tests"]

@@ -1,0 +1,10 @@
+# Keep the build context small: the context is the whole repo root.
+.git
+.venv
+**/__pycache__
+**/.pytest_cache
+.ruff_cache
+frontend
+docs
+.env
+*.md

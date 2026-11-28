@@ -221,3 +221,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- CineMatch additions ---
+# Node / frontend
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# Local env files (the committed template is .env.example)
+.env.*
+!.env.example
+
+# Working spec, decision log and assistant instructions kept out of git on purpose
+/PROJECT_SPEC.md
+/CLAUDE.md
+/docs/decisions.md

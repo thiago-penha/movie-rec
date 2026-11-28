@@ -1,0 +1,21 @@
+[project]
+name = "cinematch-api"
+version = "0.1.0"
+description = "CineMatch API: auth, users, Letterboxd upload, movie search."
+requires-python = ">=3.12"
+dependencies = [
+    "cinematch-common",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+]
+
+[tool.uv.sources]
+# Resolve cinematch-common from the workspace (libs/common), installed in editable mode.
+cinematch-common = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "api"

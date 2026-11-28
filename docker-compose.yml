@@ -1,0 +1,88 @@
+# Local development stack. The frontend runs outside Docker (npm run dev) and
+# reaches these services through the Vite proxy. On Windows, file change events from
+# bind mounts do not reach containers, so Vite in Docker would need slow polling.
+#
+# Dev conveniences: source folders are bind-mounted and uvicorn runs with --reload,
+# so Python edits apply without rebuilding the image.
+
+x-python-service: &python-service
+  env_file: .env
+  restart: unless-stopped
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Bound to 127.0.0.1 only: lets tests and tools on this machine reach the DB,
+    # but nothing else on the network. Never exposed on the server (Phase 14).
+    # Host port 5433, not 5432, so it does not clash with a locally installed Postgres.
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    <<: *python-service
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload",
+              "--reload-dir", "/app/services/api/src", "--reload-dir", "/app/libs/common/src"]
+    environment:
+      # File change events do not cross from Windows into containers, so poll instead.
+      WATCHFILES_FORCE_POLLING: "true"
+    volumes:
+      - ./services/api/src:/app/services/api/src
+      - ./libs/common/src:/app/libs/common/src
+    # 127.0.0.1 only, like db: the Vite proxy reaches it, other machines on the network do not.
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      # python instead of curl: the slim image has no curl.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  recommender:
+    <<: *python-service
+    build:
+      context: .
+      dockerfile: services/recommender/Dockerfile
+    command: ["uvicorn", "recommender.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload",
+              "--reload-dir", "/app/services/recommender/src", "--reload-dir", "/app/libs/common/src"]
+    environment:
+      WATCHFILES_FORCE_POLLING: "true"
+    volumes:
+      - ./services/recommender/src:/app/services/recommender/src
+      - ./libs/common/src:/app/libs/common/src
+    ports:
+      - "127.0.0.1:8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/rec/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  ingestion:
+    <<: *python-service
+    build:
+      context: .
+      dockerfile: services/ingestion/Dockerfile
+    volumes:
+      - ./services/ingestion/src:/app/services/ingestion/src
+      - ./libs/common/src:/app/libs/common/src
+
+volumes:
+  pgdata:
